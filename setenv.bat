@@ -1,0 +1,1 @@
+set path=c:\SFML-2.1\bin;%path%
