@@ -1,3 +1,12 @@
+/********************************************
+Course : TGD2251 Game Physics
+Session: Trimester 1, 2016/17
+ID and Name #1 : 1132700362 TAN KAH LOON
+Contacts #1 : 016-5019548 kahloontan@gmail.com 
+Game Physics Project #1 Trimester 2, 2016/17
+
+********************************************/ 
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <cmath>
@@ -16,7 +25,7 @@ int main()
   const int myWorldWidth = 800;
   const int myWorldHeight = 600;
 	// Create the window of the application
-  sf::RenderWindow myWindow(sf::VideoMode(myWorldWidth, myWorldHeight, 32), "My World");
+  sf::RenderWindow myWindow(sf::VideoMode(myWorldWidth, myWorldHeight, 32), "My PaperPlane");
   myWindow.setVerticalSyncEnabled(true);
 
   sf::Font font;
@@ -55,6 +64,12 @@ int main()
   boosterText.setPosition(0,40);
   stringstream ssBooster;
 
+  sf::Text resultText;
+  resultText.setFont(font);
+  resultText.setCharacterSize(30);
+  resultText.setColor(sf::Color::Green);
+  resultText.setPosition(myWorldWidth*0.3,myWorldHeight*0.3);
+
   sf::Texture texture; //load plane texture
   texture.loadFromFile("resources/paperplane.png");
 
@@ -67,6 +82,7 @@ int main()
 
   float velX=0.0;	//velocity for x,y
   float velY=0.0;
+  float maxVel = 15.0;
   float gravity=-9.8;
   float drag=-1.0;
   float initialForce =15.0; //Force that is used to find velocity in x and y
@@ -77,7 +93,7 @@ int main()
   float distanceTravelled=0; //to keep track of distance travelled
   float currHeight=0; //to see current height
   bool jump=false; 
-  int maxJump=10; //number of jumps
+  int maxJump=15; //number of jumps
   sf::Clock myClock; 
   
   bool restart=false;
@@ -109,7 +125,7 @@ int main()
   		distanceTravelled=0; //to keep track of distance travelled
   		currHeight=0; //to see current height
  		jump=false; 
-  		maxJump=10; //number of jumps
+  		maxJump=15; //number of jumps
   		gravity = -9.8;
   		drag = -1;
   		myClock.restart();
@@ -125,19 +141,22 @@ int main()
         
        
 
-       if(sprite.getPosition().y<myWorldHeight-sprite.getGlobalBounds().height*0.6)
+       if(sprite.getPosition().y < myWorldHeight-sprite.getGlobalBounds().height*0.6)
        {
        	velX=runningForce*cos(newRot * Pi/180);
  		velY=runningForce*sin(newRot * Pi/180);
 
-
-		if(jump && maxJump>0)
-   		 {
-   		 	velX=velX+50*deltaTime;
-   		 	velY=velY+150*deltaTime;
-   		 	jump=false;
-   		 	maxJump--;
-   		 }
+ 		if(velX < maxVel || velY < maxVel)
+		{
+			if(jump && maxJump>0)
+   		 	{
+	   		 	velX=velX+30*deltaTime;
+	   		 	velY=velY+150*deltaTime;
+	   		 	jump=false;
+	   		 	maxJump--;
+	   		}
+		}
+   		
 
    		 velX = velX + drag*deltaTime;
    		 velY = velY + gravity*deltaTime;
@@ -164,6 +183,18 @@ int main()
        		gravity=0;
        		velY=0;
        		sprite.move(velX,0);
+       		if(velX==0&&velY==0)
+       		{
+       			if(distanceTravelled>100)
+       			{
+       				resultText.setString("Win");
+       				myWindow.draw(resultText);
+       			}else
+       			{
+       				resultText.setString("Lose");
+       				myWindow.draw(resultText);
+       			}
+       		}
 
        }
        
@@ -176,10 +207,12 @@ int main()
         distanceTravelled += velX*deltaTime+drag*deltaTime*deltaTime;
         currHeight += velY*deltaTime+gravity*deltaTime*deltaTime;
        	
+       	//reset the ostream buffer
         ssDist.str("");
    		ssHeight.str("");
    		ssBooster.str("");
 
+   		//update new value inside
         ssDist<<distanceTravelled;
         ssHeight<<currHeight;
         ssBooster<<maxJump;
@@ -208,8 +241,6 @@ int main()
             		
             		
             	}
-            if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) 		
-            	sprite.setRotation(sprite.getRotation()+5);
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) 
             	jump=true;
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::R))
